@@ -1,0 +1,18 @@
+# Task ID: 8
+# Title: ParticipantList Component
+# Status: pending
+# Dependencies: 2, 4, 5, 6
+# Priority: medium
+# Description: Build the participant management interface showing video previews with controls for adding/removing participants from the main canvas
+# Details:
+- Create ParticipantList.vue component
+- Implement participant video card design
+- Add video preview thumbnails
+- Create add/remove from canvas buttons
+- Implement individual mute controls
+- Add participant role indicators
+- Show connection status badges
+- Implement drag-to-reorder functionality
+
+# Test Strategy:
+Component interaction tests, drag-and-drop tests, state synchronization tests

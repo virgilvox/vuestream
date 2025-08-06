@@ -1,0 +1,18 @@
+# Task ID: 13
+# Title: Recording Engine
+# Status: pending
+# Dependencies: 6, 7, 12
+# Priority: medium
+# Description: Implement local recording functionality using MediaRecorder API with format selection and quality options
+# Details:
+- Create recording composable (useRecording)
+- Implement MediaRecorder integration
+- Add canvas stream capture
+- Support multiple output formats (webm, mp4)
+- Implement quality/bitrate selection
+- Add recording progress indicators
+- Create recording file management
+- Implement pause/resume functionality
+
+# Test Strategy:
+Recording output tests, format compatibility tests, pause/resume tests

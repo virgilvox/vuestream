@@ -1,0 +1,18 @@
+# Task ID: 7
+# Title: MediaControls Component
+# Status: pending
+# Dependencies: 2, 4, 5
+# Priority: high
+# Description: Create professional media control interface for camera, microphone, screen share, and recording management
+# Details:
+- Build MediaControls.vue component
+- Implement device selection dropdowns
+- Add mute/unmute toggle buttons with states
+- Create audio level meter visualization
+- Add screen share toggle functionality
+- Implement recording start/stop controls
+- Add device permission handling
+- Include connection quality indicators
+
+# Test Strategy:
+User interaction tests, device switching tests, permission handling tests

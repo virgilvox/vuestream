@@ -1,0 +1,18 @@
+# Task ID: 4
+# Title: WebRTC Media Engine Core
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Implement WebRTC functionality for peer connections, media stream management, and signaling architecture
+# Details:
+- Integrate simple-peer or peerjs library
+- Create media device management composable (useMedia)
+- Implement camera/microphone enumeration
+- Set up configurable STUN/TURN servers
+- Create signaling adapter interface
+- Implement default public signaling server connection
+- Add connection state management
+- Handle peer lifecycle events
+
+# Test Strategy:
+Mock WebRTC connections, device enumeration tests, signaling protocol verification

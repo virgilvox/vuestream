@@ -1,0 +1,18 @@
+# Task ID: 5
+# Title: State Management Architecture
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Set up Pinia stores for application state including media, participants, canvas, and settings management
+# Details:
+- Configure Pinia with proper TypeScript support
+- Create media store for device and stream state
+- Create participants store for peer management
+- Create canvas store for layout and rendering state
+- Create settings store for user preferences
+- Implement store persistence for settings
+- Add store devtools integration
+- Create store composables for component usage
+
+# Test Strategy:
+Unit tests for store actions, state persistence verification, reactivity tests

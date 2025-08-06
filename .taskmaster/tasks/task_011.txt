@@ -1,0 +1,18 @@
+# Task ID: 11
+# Title: Overlay System
+# Status: pending
+# Dependencies: 3, 6, 10
+# Priority: medium
+# Description: Implement overlay rendering system for logos, banners, lower thirds, and custom graphics on the streaming canvas
+# Details:
+- Create overlay composable (useOverlay)
+- Implement logo overlay positioning
+- Build top/bottom banner components
+- Create lower third name plates
+- Add overlay animation system
+- Implement overlay layering/z-index
+- Create overlay preset management
+- Add live overlay toggling
+
+# Test Strategy:
+Overlay rendering tests, animation tests, layering conflict tests

@@ -1,0 +1,18 @@
+# Task ID: 6
+# Title: StudioCanvas Component
+# Status: pending
+# Dependencies: 3, 4, 5
+# Priority: high
+# Description: Build the main streaming canvas component that renders video feeds using Pixi.js with dynamic layout support
+# Details:
+- Create StudioCanvas.vue component
+- Implement Pixi.js application initialization
+- Add video texture rendering from media streams
+- Create layout zone system for video placement
+- Implement smooth transitions between layouts
+- Add resize handling for responsive canvas
+- Optimize rendering performance
+- Add canvas recording preparation hooks
+
+# Test Strategy:
+Component rendering tests, layout switching tests, performance monitoring
