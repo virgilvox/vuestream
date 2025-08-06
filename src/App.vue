@@ -1,11 +1,31 @@
 <script setup lang="ts">
-import { ThemeSwitcher } from '../packages/components'
+import { ref } from 'vue'
+import { ThemeSwitcher, StudioCanvas } from '../packages/components'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import { useTheme } from '../packages/composables'
 
 const { isDark } = useTheme()
+
+// Canvas demo state
+const showCanvasDemo = ref(false)
+const canvasError = ref<string | null>(null)
+
+const handleCanvasInitialized = () => {
+  console.log('Canvas initialized successfully')
+  canvasError.value = null
+}
+
+const handleCanvasError = (error: Error) => {
+  console.error('Canvas error:', error)
+  canvasError.value = error.message
+}
+
+const toggleCanvasDemo = () => {
+  showCanvasDemo.value = !showCanvasDemo.value
+  canvasError.value = null
+}
 </script>
 
 <template>
@@ -158,6 +178,70 @@ const { isDark } = useTheme()
                     <p class="vs-text-primary">Panel with backdrop blur</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </template>
+        </Card>
+      </section>
+
+      <!-- Canvas Demo -->
+      <section class="mb-12">
+        <Card class="vs-transition">
+          <template #title>
+            <div class="flex items-center justify-between">
+              <span>Pixi.js Canvas Demo</span>
+              <Button 
+                :label="showCanvasDemo ? 'Hide Canvas' : 'Show Canvas'"
+                @click="toggleCanvasDemo"
+                severity="secondary"
+                outlined
+                size="small"
+              />
+            </div>
+          </template>
+          <template #content>
+            <div class="space-y-4">
+              <p class="vs-text-secondary">
+                High-performance canvas rendering with Pixi.js v8, featuring WebGPU support,
+                video texture management, and professional layout engine.
+              </p>
+              
+              <!-- Error display -->
+              <div v-if="canvasError" class="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
+                <p class="text-red-700 dark:text-red-300 text-sm">
+                  <strong>Canvas Error:</strong> {{ canvasError }}
+                </p>
+              </div>
+
+              <!-- Canvas container -->
+              <div v-if="showCanvasDemo" class="canvas-demo-container">
+                <StudioCanvas
+                  :config="{
+                    width: 800,
+                    height: 450,
+                    backgroundColor: 0x1a1a1a,
+                    antialias: true,
+                    preferWebGPU: true
+                  }"
+                  :show-debug="true"
+                  :show-controls="true"
+                  :auto-resize="false"
+                  @initialized="handleCanvasInitialized"
+                  @error="handleCanvasError"
+                  class="rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700"
+                />
+              </div>
+
+              <div v-if="showCanvasDemo" class="canvas-info">
+                <h4 class="text-sm font-medium vs-text-primary mb-2">Canvas Features</h4>
+                <ul class="text-sm vs-text-secondary space-y-1">
+                  <li>• WebGPU/WebGL rendering with automatic fallback</li>
+                  <li>• Real-time performance monitoring</li>
+                  <li>• Video texture support for MediaStream integration</li>
+                  <li>• Layer-based rendering architecture</li>
+                  <li>• Efficient texture pooling and memory management</li>
+                  <li>• Layout zone system for dynamic video positioning</li>
+                </ul>
               </div>
             </div>
           </template>
