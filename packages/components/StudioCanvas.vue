@@ -37,24 +37,50 @@
     <!-- Controls overlay -->
     <div v-if="showControls && isInitialized" class="controls-overlay">
       <div class="controls-panel vs-panel p-3">
-        <button
-          @click="toggleDebug"
-          class="vs-btn vs-btn-ghost text-xs"
-        >
-          Debug {{ showDebug ? 'Off' : 'On' }}
-        </button>
-        <button
-          @click="resize(1920, 1080)"
-          class="vs-btn vs-btn-ghost text-xs"
-        >
-          1080p
-        </button>
-        <button
-          @click="resize(1280, 720)"
-          class="vs-btn vs-btn-ghost text-xs"
-        >
-          720p
-        </button>
+        <div class="controls-row">
+          <button
+            @click="toggleDebug"
+            class="vs-btn vs-btn-ghost text-xs"
+          >
+            Debug {{ showDebugLocal ? 'Off' : 'On' }}
+          </button>
+          <button
+            @click="resize(1920, 1080)"
+            class="vs-btn vs-btn-ghost text-xs"
+          >
+            1080p
+          </button>
+          <button
+            @click="resize(1280, 720)"
+            class="vs-btn vs-btn-ghost text-xs"
+          >
+            720p
+          </button>
+        </div>
+        
+        <div class="controls-row">
+          <select 
+            @change="onLayoutChange"
+            class="layout-select text-xs"
+            :value="currentLayout?.id || ''"
+          >
+            <option value="">Select Layout</option>
+            <option 
+              v-for="layout in availableLayouts" 
+              :key="layout.id" 
+              :value="layout.id"
+            >
+              {{ layout.name }}
+            </option>
+          </select>
+          
+          <button
+            @click="addDemoOverlay"
+            class="vs-btn vs-btn-ghost text-xs"
+          >
+            Add Overlay
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -94,8 +120,12 @@ const {
   isInitialized,
   canvasSize,
   performance,
+  currentLayout,
+  availableLayouts,
   initialize,
   resize,
+  applyLayout,
+  createOverlay,
   onCanvasEvent,
   manager
 } = useCanvas(props.config)
@@ -118,7 +148,7 @@ onMounted(async () => {
 
 // Set up event listeners
 onCanvasEvent('error', (event) => {
-  emit('error', new Error(event.data.message))
+  emit('error', new Error((event.data as { message?: string })?.message || 'Unknown canvas error'))
 })
 
 // Watch for canvas size changes
@@ -149,6 +179,35 @@ if (props.autoResize) {
 // Methods
 const toggleDebug = () => {
   showDebugLocal.value = !showDebugLocal.value
+}
+
+const onLayoutChange = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  if (target.value) {
+    applyLayout(target.value)
+  }
+}
+
+const addDemoOverlay = async () => {
+  try {
+    // Add a demo text overlay
+    await createOverlay({
+      id: `demo-${Date.now()}`,
+      type: 'text',
+      content: 'VueStream Demo',
+      x: 50,
+      y: 100,
+      style: {
+        fontSize: 32,
+        fill: 0xffffff,
+        fontWeight: '700',
+        stroke: 0x000000,
+        strokeThickness: 2
+      }
+    })
+  } catch (error) {
+    console.error('Failed to create overlay:', error)
+  }
 }
 
 // Expose canvas manager for parent components
@@ -188,7 +247,15 @@ defineExpose({
 }
 
 .controls-panel {
+  @apply flex flex-col gap-2;
+}
+
+.controls-row {
   @apply flex gap-2;
+}
+
+.layout-select {
+  @apply vs-input text-xs min-w-32;
 }
 
 .debug-panel {

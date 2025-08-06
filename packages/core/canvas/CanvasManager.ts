@@ -5,6 +5,8 @@
  */
 
 import { Application, Container, Texture, Sprite } from 'pixi.js'
+import { OverlayManager, type AnyOverlayConfig } from './overlays'
+import { LAYOUT_PRESETS, calculateZonePositions, type LayoutPreset } from './layouts'
 import type {
   CanvasConfig,
   CanvasState,
@@ -22,6 +24,8 @@ export class CanvasManager {
   private config: CanvasConfig
   private eventListeners: Map<string, CanvasEventListener[]>
   private texturePool: TexturePool
+  private overlayManager: OverlayManager | null = null
+  private currentLayout: LayoutPreset | null = null
   private performanceMonitor: {
     interval: number | null
     startTime: number
@@ -93,7 +97,7 @@ export class CanvasManager {
         antialias: this.config.antialias,
         resolution: this.config.resolution,
         preserveDrawingBuffer: this.config.preserveDrawingBuffer,
-        powerPreference: this.config.powerPreference as 'default' | 'high-performance' | 'low-power',
+        powerPreference: this.config.powerPreference as never,
         preference: this.config.preferWebGPU ? 'webgpu' : 'webgl'
       })
 
@@ -108,6 +112,12 @@ export class CanvasManager {
 
       // Start texture pool cleanup
       this.startTexturePoolCleanup()
+
+      // Initialize overlay manager
+      const overlaysLayer = this.state.layers.get('overlays')
+      if (overlaysLayer) {
+        this.overlayManager = new OverlayManager(overlaysLayer.container)
+      }
 
       this.state.isInitialized = true
       this.emit('initialized', { config: this.config })
@@ -301,6 +311,140 @@ export class CanvasManager {
   }
 
   /**
+   * Apply layout preset
+   */
+  applyLayout(layoutId: string): void {
+    const layout = LAYOUT_PRESETS.find(l => l.id === layoutId)
+    if (!layout) {
+      throw new Error(`Layout ${layoutId} not found`)
+    }
+
+    // Clear existing layout zones
+    for (const [zoneId] of this.state.layoutZones) {
+      this.removeLayoutZone(zoneId)
+    }
+
+    // Calculate responsive positions
+    const zones = calculateZonePositions(layout.zones, this.state.width, this.state.height)
+
+    // Create new layout zones
+    zones.forEach(zoneData => {
+      this.createLayoutZone(
+        zoneData.id,
+        zoneData.x,
+        zoneData.y,
+        zoneData.width,
+        zoneData.height
+      )
+    })
+
+    this.currentLayout = layout
+    this.emit('layout-changed', { layout: layout.id, zones: zones.length })
+  }
+
+  /**
+   * Get current layout
+   */
+  getCurrentLayout(): LayoutPreset | null {
+    return this.currentLayout
+  }
+
+  /**
+   * Get available layout presets
+   */
+  getAvailableLayouts(): LayoutPreset[] {
+    return LAYOUT_PRESETS
+  }
+
+  /**
+   * Remove layout zone
+   */
+  removeLayoutZone(id: string): void {
+    const zone = this.state.layoutZones.get(id)
+    if (zone) {
+      // Remove video if present
+      if (zone.videoTexture) {
+        zone.container.removeChild(zone.videoTexture.sprite as never)
+      }
+      
+      // Remove container from parent
+      if (zone.container.parent) {
+        zone.container.parent.removeChild(zone.container as never)
+      }
+      
+      this.state.layoutZones.delete(id)
+    }
+  }
+
+  /**
+   * Create overlay
+   */
+  async createOverlay(config: AnyOverlayConfig): Promise<void> {
+    if (!this.overlayManager) {
+      throw new Error('Overlay manager not initialized')
+    }
+
+    switch (config.type) {
+      case 'text':
+        this.overlayManager.createTextOverlay(config)
+        break
+      case 'image':
+      case 'logo':
+        await this.overlayManager.createImageOverlay(config)
+        break
+      case 'lower-third':
+        this.overlayManager.createLowerThird(config)
+        break
+    }
+
+    this.emit('overlay-created', { id: config.id, type: config.type })
+  }
+
+  /**
+   * Update overlay
+   */
+  updateOverlay(id: string, updates: Partial<AnyOverlayConfig>): void {
+    if (!this.overlayManager) return
+
+    if (updates.x !== undefined || updates.y !== undefined) {
+      this.overlayManager.moveOverlay(
+        id,
+        updates.x ?? 0,
+        updates.y ?? 0
+      )
+    }
+
+    if (updates.visible !== undefined) {
+      this.overlayManager.setOverlayVisibility(id, updates.visible)
+    }
+
+    // Type-specific updates
+    if (updates.type === 'text' && 'content' in updates) {
+      this.overlayManager.updateTextOverlay(id, updates.content as string)
+    }
+
+    if (updates.type === 'lower-third' && ('title' in updates || 'subtitle' in updates)) {
+      this.overlayManager.updateLowerThird(
+        id,
+        updates.title as string,
+        updates.subtitle as string
+      )
+    }
+
+    this.emit('overlay-updated', { id, updates })
+  }
+
+  /**
+   * Remove overlay
+   */
+  removeOverlay(id: string): void {
+    if (!this.overlayManager) return
+    
+    this.overlayManager.removeOverlay(id)
+    this.emit('overlay-removed', { id })
+  }
+
+  /**
    * Get performance metrics
    */
   getPerformanceMetrics(): PerformanceMetrics {
@@ -434,6 +578,11 @@ export class CanvasManager {
     // Clear texture pool
     for (const entry of this.texturePool.textures.values()) {
       entry.texture.destroy()
+    }
+
+    // Destroy overlay manager
+    if (this.overlayManager) {
+      this.overlayManager.destroy()
     }
 
     // Destroy Pixi application

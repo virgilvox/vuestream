@@ -14,6 +14,8 @@ import type {
   PerformanceMetrics,
   CanvasEvent
 } from '../core/canvas/types'
+import type { LayoutPreset } from '../core/canvas/layouts'
+import type { AnyOverlayConfig } from '../core/canvas/overlays'
 
 export interface UseCanvasOptions extends Partial<CanvasConfig> {
   autoStart?: boolean
@@ -27,6 +29,8 @@ export interface UseCanvasReturn {
   performance: Ref<PerformanceMetrics>
   videoTextures: Ref<Map<string, VideoTexture>>
   layoutZones: Ref<Map<string, LayoutZone>>
+  currentLayout: Ref<LayoutPreset | null>
+  availableLayouts: Ref<LayoutPreset[]>
   
   // Actions
   initialize: (container: HTMLElement) => Promise<void>
@@ -48,6 +52,12 @@ export interface UseCanvasReturn {
     layerName?: string
   ) => LayoutZone
   removeLayoutZone: (id: string) => void
+  applyLayout: (layoutId: string) => void
+  
+  // Overlay management
+  createOverlay: (config: AnyOverlayConfig) => Promise<void>
+  updateOverlay: (id: string, updates: Partial<AnyOverlayConfig>) => void
+  removeOverlay: (id: string) => void
   
   // Events
   onCanvasEvent: (eventType: string, callback: (event: CanvasEvent) => void) => void
@@ -80,6 +90,8 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
   
   const videoTextures = ref(new Map<string, VideoTexture>()) as Ref<Map<string, VideoTexture>>
   const layoutZones = ref(new Map<string, LayoutZone>()) as Ref<Map<string, LayoutZone>>
+  const currentLayout = ref<LayoutPreset | null>(null)
+  const availableLayouts = ref(manager.getAvailableLayouts())
 
   // Event listeners storage
   const eventListeners = new Map<string, ((event: CanvasEvent) => void)[]>()
@@ -205,6 +217,38 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
   }
 
   /**
+   * Apply layout preset
+   */
+  const applyLayout = (layoutId: string): void => {
+    manager.applyLayout(layoutId)
+    
+    // Update reactive state
+    layoutZones.value = new Map(manager.getState().layoutZones)
+    currentLayout.value = manager.getCurrentLayout()
+  }
+
+  /**
+   * Create overlay
+   */
+  const createOverlay = async (config: AnyOverlayConfig): Promise<void> => {
+    await manager.createOverlay(config)
+  }
+
+  /**
+   * Update overlay
+   */
+  const updateOverlay = (id: string, updates: Partial<AnyOverlayConfig>): void => {
+    manager.updateOverlay(id, updates)
+  }
+
+  /**
+   * Remove overlay
+   */
+  const removeOverlay = (id: string): void => {
+    manager.removeOverlay(id)
+  }
+
+  /**
    * Register event listener
    */
   const onCanvasEvent = (eventType: string, callback: (event: CanvasEvent) => void): void => {
@@ -219,7 +263,7 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
 
   // Set up built-in event listeners
   onCanvasEvent('performance-update', (event) => {
-    performance.value = event.data
+    performance.value = event.data as PerformanceMetrics
   })
 
   onCanvasEvent('texture-created', () => {
@@ -233,6 +277,7 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
   onCanvasEvent('layout-changed', () => {
     const state = manager.getState()
     layoutZones.value = new Map(state.layoutZones)
+    currentLayout.value = manager.getCurrentLayout()
     if (state.width !== canvasSize.value.width || state.height !== canvasSize.value.height) {
       canvasSize.value = { width: state.width, height: state.height }
     }
@@ -261,6 +306,8 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
     performance,
     videoTextures,
     layoutZones,
+    currentLayout,
+    availableLayouts,
     
     // Actions
     initialize,
@@ -275,6 +322,12 @@ export function useCanvas(options: UseCanvasOptions = {}): UseCanvasReturn {
     // Layout management
     createLayoutZone,
     removeLayoutZone,
+    applyLayout,
+    
+    // Overlay management
+    createOverlay,
+    updateOverlay,
+    removeOverlay,
     
     // Events
     onCanvasEvent,
