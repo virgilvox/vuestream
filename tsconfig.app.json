@@ -1,0 +1,20 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "packages/**/*", "packages/**/*.vue"],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+
+    "paths": {
+      "@/*": ["./src/*"],
+      "@core/*": ["./packages/core/*"],
+      "@components/*": ["./packages/components/*"],
+      "@composables/*": ["./packages/composables/*"],
+      "@store/*": ["./packages/store/*"],
+      "@layouts/*": ["./packages/layouts/*"],
+      "@overlays/*": ["./packages/overlays/*"],
+      "@storage/*": ["./packages/storage/*"],
+      "@themes/*": ["./packages/themes/*"]
+    }
+  }
+}
