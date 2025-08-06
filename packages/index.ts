@@ -15,6 +15,10 @@ export * from './store'
 export * from './storage'
 export * from './themes'
 
+// Theme management
+export { useTheme } from './composables'
+export type { ThemeMode, ThemeTokens } from './composables'
+
 // Types
 export interface VueStreamOptions {
   signalingServer?: string

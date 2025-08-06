@@ -4,4 +4,9 @@
  * Design tokens and theme configurations
  */
 
-// Theme configurations will be exported as they are implemented
+export * from './tokens'
+export { default as lightTheme } from './default'
+export { default as darkTheme } from './dark'
+
+// Re-export for convenience
+export { lightTheme as defaultTheme } from './default'

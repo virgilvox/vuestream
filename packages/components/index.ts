@@ -4,4 +4,4 @@
  * Vue components for the streaming interface
  */
 
-// Components will be exported as they are implemented
+export { default as ThemeSwitcher } from './ThemeSwitcher.vue'
